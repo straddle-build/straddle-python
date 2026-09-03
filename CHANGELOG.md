@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.0.0](https://github.com/straddle-build/straddle-python/compare/v1.0.0...v2.0.0) (2026-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** 4 breaking changes to the SDK surface.
+    - Property `embed_error_response.data` type changed from `unknown | null` to `unknown`.
+    - Schema `customer_address` shape changed.
+    - Schema `unmasked_compliance_profile` shape changed.
+    - Schema `compliance_profile` shape changed.
+
+### Features
+
+* **api:** update property embed_error_response.data (+3 more changes) ([e66d4b9](https://github.com/straddle-build/straddle-python/commit/e66d4b94c45713b4d6037976fbb77dd0faa9f758))
+
+
+### Chores
+
+* **api:** regenerate SDK ([6d9023f](https://github.com/straddle-build/straddle-python/commit/6d9023f8cb00ae387c2c759dea915fb1f314dc18))
+
 ## [1.0.0](https://github.com/straddle-build/straddle-python/compare/v0.1.0...v1.0.0) (2026-09-03)
 
 
