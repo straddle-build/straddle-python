@@ -1,6 +1,6 @@
 [project]
 name = "straddle"
-version = "0.1.0" # x-release-please-version
+version = "1.0.0" # x-release-please-version
 description = "The Straddle API uses resource URLs, standard HTTP methods, and JSON request and response bodies."
 readme = "README.md"
 license = "Apache-2.0"
