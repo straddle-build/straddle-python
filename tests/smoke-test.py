@@ -248,7 +248,7 @@ def _smoke_case_17() -> None:
         bank_account={"account_holder": "", "routing_number": "xxxxxxxxx", "account_number": ""},
         metadata={},
         platform_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        purposes=[],
+        purposes=["charges"],
         description="",
         request_id="request_id",
         correlation_id="correlation_id",
@@ -687,11 +687,8 @@ def _smoke_case_60() -> None:
         name="Ron Swanson",
         type="individual",
         email="ron.swanson@pawnee.com",
-        address={"address1": "123 Main St", "city": "Anytown", "state": "CA", "zip": "94105"},
         phone="+12128675309",
-        external_id="customer_123",
         device={"ip_address": "192.168.1.1"},
-        metadata={},
     )
 
 
@@ -700,7 +697,7 @@ def _smoke_case_61() -> None:
         name="Ron Swanson",
         type="individual",
         email="ron.swanson@pawnee.com",
-        address={"address1": "123 Main St", "city": "Anytown", "state": "CA", "zip": "94105"},
+        address={"address1": "123 Main St", "address2": "Apt 1", "city": "Anytown", "state": "CA", "zip": "12345"},
         phone="+12128675309",
         compliance_profile={"ssn": "123-45-6789", "dob": "1969-04-20"},
         external_id="customer_123",
@@ -1129,14 +1126,14 @@ def _smoke_case_107() -> None:
 def _smoke_case_108() -> None:
     charge = client.charges.upload_authorization_proof(
         id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        file=b"",
+        file=b"file",
     )
 
 
 def _smoke_case_109() -> None:
     charge = client.charges.upload_authorization_proof(
         id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        file=b"",
+        file=b"file",
         straddle_account_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
         request_id="request_id",
         correlation_id="correlation_id",
@@ -1439,14 +1436,14 @@ def _smoke_case_135() -> None:
 def _smoke_case_136() -> None:
     payout = client.payouts.upload_authorization_proof(
         id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        file=b"",
+        file=b"file",
     )
 
 
 def _smoke_case_137() -> None:
     payout = client.payouts.upload_authorization_proof(
         id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-        file=b"",
+        file=b"file",
         straddle_account_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
         request_id="request_id",
         correlation_id="correlation_id",

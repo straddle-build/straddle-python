@@ -50,10 +50,10 @@ class UnmaskedPayout(BaseModel):
 
     config: PayoutConfiguration
 
-    created_at: Optional[datetime] = None
+    created_at: datetime
     """Timestamp when this payout was created."""
 
-    updated_at: Optional[datetime] = None
+    updated_at: datetime
     """Timestamp when this payout was last updated."""
 
     processed_at: Optional[datetime] = None
