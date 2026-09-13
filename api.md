@@ -633,11 +633,8 @@ customer = client.customers.create(
     name="Ron Swanson",
     type="individual",
     email="ron.swanson@pawnee.com",
-    address={"address1": "123 Main St", "city": "Anytown", "state": "CA", "zip": "94105"},
     phone="+12128675309",
-    external_id="customer_123",
     device={"ip_address": "192.168.1.1"},
-    metadata={},
 )
 ```
 
@@ -1018,7 +1015,7 @@ Uploads a proof-of-authorization document for a charge. A later upload adds anot
 ```python
 charge = client.charges.upload_authorization_proof(
     id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    file=b"",
+    file=b"file",
 )
 ```
 
@@ -1256,7 +1253,7 @@ Uploads a proof-of-authorization document for a payout. A later upload adds anot
 ```python
 payout = client.payouts.upload_authorization_proof(
     id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    file=b"",
+    file=b"file",
 )
 ```
 
