@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/straddle-build/straddle-python/compare/v1.0.4...v1.0.5) (2026-09-27)
+
+
+### Bug Fixes
+
+* add repository URL to package metadata ([16f30d7](https://github.com/straddle-build/straddle-python/commit/16f30d7ce6f2c06e4b115d3fcdacf276a9249474))
+
 ## [1.0.4](https://github.com/straddle-build/straddle-python/compare/v1.0.0...v1.0.4) (2026-09-13)
 
 
