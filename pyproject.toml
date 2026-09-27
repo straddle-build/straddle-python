@@ -17,6 +17,9 @@ dependencies = [
   "sniffio",
 ]
 
+[project.urls]
+Repository = "https://github.com/straddle-build/straddle-python"
+
 [project.optional-dependencies]
 aiohttp = ["aiohttp", "httpx_aiohttp>=0.1.9"]
 webhooks = ["standardwebhooks >= 1.0.1, < 2"]
