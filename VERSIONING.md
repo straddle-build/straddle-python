@@ -21,6 +21,13 @@ token required):
 - **Default branch** — seeded from the first generated snapshot, then only ever receives
   released states, each one the merge of a release PR.
 
+Package metadata customization: `pyproject.toml` on `scalar-next` declares
+`[project.urls]` `Repository = "https://github.com/straddle-build/straddle-python"`. The
+acceptance check is the built wheel `METADATA`, the sdist `PKG-INFO`, and
+`importlib.metadata` after installing the wheel, which must all report that Repository
+Project-URL. The URL reaches PyPI only through a normal release. Keep the table when
+resolving regeneration conflicts.
+
 Release PRs are opened by the Scalar platform from `scalar-next` against the default
 branch — so the PR diff shows the full pending release — and are versioned from
 [Conventional Commits](https://www.conventionalcommits.org). Merging a release PR tags the
