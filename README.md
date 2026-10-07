@@ -1,161 +1,168 @@
-# Straddle API
+# Straddle Python SDK
 
-This library provides convenient access to the Straddle API from Python.
+Use Straddle's Pay by Bank and Embed APIs from Python. The SDK provides synchronous and asynchronous clients, typed responses, authentication, and retries.
 
-The full API of this library can be found in [api.md](./api.md).
+## Install
 
-<br />
-
-## Contents
-
-- [Installation](#installation)
-- [Usage](#usage)
-- [API Reference](./api.md)
-- [Async](#async)
-- [Authentication](#authentication)
-- [Errors](#errors)
-- [Client Options](#client-options)
-- [Retries and Timeouts](#retries-and-timeouts)
-- [Helpers](#helpers)
-- [Logging](#logging)
-- [Requirements](#requirements)
-
-<br />
-
-## Installation
+Use Python 3.9 or later. Install the package in your project's virtual environment:
 
 ```sh
-pip install straddle
+python -m pip install straddle
 ```
 
-<br />
+The PyPI package is [`straddle`](https://pypi.org/project/straddle/). Its source lives in `straddle-build/straddle-python`.
 
-## Usage
+## Make your first request
+
+Create a sandbox API key in the [Straddle Dashboard](https://dashboard.straddle.com), then set it in your environment. See [API authentication](https://docs.straddle.com/api-reference/authentication) for the setup steps.
+
+```sh
+export STRADDLE_API_KEY="YOUR_SANDBOX_API_KEY"
+```
+
+Save the following example as `quickstart.py`. It requests the first page of customers from the sandbox and closes the client when the request finishes:
 
 ```python
 import os
 
 from straddle import StraddleAPI
 
-client = StraddleAPI(
-    bearer=os.environ.get("BEARER"),
-)
-
-account = client.accounts.retrieve(
-    account_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-)
-
-print(account)
+with StraddleAPI(
+    bearer=os.environ["STRADDLE_API_KEY"],
+    base_url="https://sandbox.straddle.com",
+) as client:
+    page = client.customers.list(page_number=1, page_size=10)
+    print(f"Customers on this page: {len(page.data)}")
 ```
 
-The examples in the following sections assume a `client` configured as shown above.
+For a SaaS platform key, add `straddle_account_id="YOUR_EMBEDDED_ACCOUNT_ID"` to the `list` arguments before running the example. This selects the embedded account whose customers you want to read. Direct accounts and marketplaces list customers without that header. See [platform account scoping](https://docs.straddle.com/guides/embed/api-headers).
 
-See the [API reference](./api.md) for every available operation.
+Run the example:
 
-<br />
+```sh
+python quickstart.py
+```
 
-## Async
+A successful request prints the number of customers on the page. `Customers on this page: 0` is valid for an empty account. Customer records are in `page.data`; pagination and request metadata are in `page.meta`.
 
-Every client has an `Async` counterpart (`AsyncStraddleAPI`) exposing the same resource tree with `await`.
+## Use the async client
+
+`AsyncStraddleAPI` exposes the same resources and methods with `await`. Use an async context manager to close its connections:
 
 ```python
 import asyncio
+import os
 
 from straddle import AsyncStraddleAPI
 
 
 async def main() -> None:
-    client = AsyncStraddleAPI()
-    account = await client.accounts.retrieve(
-        account_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    )
+    async with AsyncStraddleAPI(
+        bearer=os.environ["STRADDLE_API_KEY"],
+        base_url="https://sandbox.straddle.com",
+    ) as client:
+        page = await client.customers.list(page_number=1, page_size=10)
+        print(f"Customers on this page: {len(page.data)}")
 
 
 asyncio.run(main())
 ```
 
-<br />
+Apply the same account-scoping rule to the async request.
 
-## Authentication
+## Configure authentication and environments
 
-Pass credentials to the generated client constructor. Environment variables are read automatically when supported by the target runtime.
+The examples pass `STRADDLE_API_KEY` explicitly as `bearer`. If you omit `bearer`, the client reads `BEARER`.
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `bearer` | `string \| provider` | - | Send the API key as a bearer token in the `Authorization` header. Defaults to BEARER. |
+Set `base_url` explicitly to select an environment. If you omit it, the client reads `STRADDLE_BASE_URL`, then defaults to `https://sandbox.straddle.com`. Production uses `https://production.straddle.com` and a production API key. See [environments](https://docs.straddle.com/api-reference/environments).
 
-Declared schemes:
+## Read additional pages
 
-- `Bearer` bearer token
-
-<br />
-
-## Errors
-
-Non-success responses throw generated API errors. Error objects expose status, headers, response body, and request metadata where the target runtime supports it.
+List methods return one response page. Choose the next `page_number` using `page.meta.total_pages`, and keep your filters and account scope the same between requests:
 
 ```python
-from straddle import APIStatusError
+page = client.customers.list(page_number=2, page_size=10)
+```
+
+This and the following snippets assume an open `client`, such as one inside the context manager in the first example. See the [method reference](./api.md) for each resource's filters and response types.
+
+## Handle errors
+
+Catch `APIStatusError` for an HTTP error response. Its `status_code`, `response`, and `body` describe the response. Connection errors raise `APIConnectionError`; timeouts raise `APITimeoutError`.
+
+```python
+from straddle import APIConnectionError, APIStatusError
 
 try:
-    account = client.accounts.retrieve(
-        account_id="7c9e6679-7425-40de-944b-e07fc1f90ae7",
-    )
-except APIStatusError as err:
-    print(err.status_code, err.message)
+    page = client.customers.list(page_size=10)
+except APIConnectionError:
+    print("The request could not connect to Straddle.")
+    raise
+except APIStatusError as error:
+    print(error.status_code, error.message)
     raise
 ```
 
-Documented error statuses: `400`, `401`, `403`, `404`, `422`, `500`.
+For a `401`, check that the key matches the selected environment. For a `403`, check the key's permissions and account scope. See [API errors](https://docs.straddle.com/api-reference/errors) for response details.
 
-<br />
+## Set retries and timeouts
 
-## Client Options
+The client retries connection errors, `408`, `409`, `429`, and `5xx` responses twice by default. It uses exponential backoff and honors supported `Retry-After` values. Its default HTTPX timeout is 60 seconds, with a 5-second connection timeout. Retries can extend the total request duration.
 
-Configure the generated client by setting any of these options when you create it.
+Set `max_retries` and `timeout` in the constructor, or use `with_options` for a request:
 
 ```python
-from straddle import StraddleAPI
-
-client = StraddleAPI(
-    timeout=60.0,
-    max_retries=2,
-)
+page = client.with_options(max_retries=0, timeout=30.0).customers.list(page_size=10)
 ```
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `bearer` | `str \| None` | `os.environ.get("BEARER")` | Send the API key as a bearer token in the `Authorization` header. |
-| `base_url` | `str \| httpx.URL \| None` | - | Override the default API base URL. |
-| `timeout` | `float \| Timeout \| None` | `60.0` | Maximum time in seconds to wait for a response before aborting a request. |
-| `max_retries` | `int` | `2` | Number of retries for temporary failures. |
-| `default_headers` | `Mapping[str, str] \| None` | - | Headers sent with every request. |
-| `default_query` | `Mapping[str, object] \| None` | - | Query parameters sent with every request. |
+For write operations that accept an idempotency key, pass the operation's `idempotency_key` argument. Reuse that value when retrying the same operation. See [idempotency](https://docs.straddle.com/api-reference/idempotency).
 
-<br />
+## Inspect raw and streaming responses
 
-## Retries and Timeouts
+Use `with_raw_response` to inspect HTTP metadata before parsing the result:
 
-Generated clients support request timeouts and retry temporary failures such as network errors, 408, 409, 429, and 5xx responses. Retry delays honor `Retry-After` headers when present. Tune the retry and timeout client options shown above, or override them per request.
+```python
+response = client.with_raw_response.customers.list(page_size=10)
+print(response.status_code)
+page = response.parse()
+```
 
-<br />
+Use `with_streaming_response` in a context manager to read the body as a stream:
 
-## Helpers
+```python
+with client.with_streaming_response.customers.list(page_size=10) as response:
+    for line in response.iter_lines():
+        print(line)
+```
 
-- Use `client.with_raw_response.<resource>.<method>(...)` to access the raw `httpx.Response` and parse it yourself.
-- Use `client.with_streaming_response.<resource>.<method>(...)` to stream a response body without buffering it.
+The async client provides the corresponding async response methods.
 
-<br />
+## Client options and logging
 
-## Logging
+Set these options in the client constructor.
 
-- Set the `STRADDLE_LOG` environment variable to `info` or `debug` to enable HTTP logging.
-- Logs are emitted through the standard `logging` module under the `straddle` logger.
+| Option | Purpose | Default |
+| --- | --- | --- |
+| `bearer` | API key | `BEARER` |
+| `base_url` | API base URL | `STRADDLE_BASE_URL`, then sandbox |
+| `timeout` | HTTPX timeout in seconds or an `httpx.Timeout` | 60 seconds; connection timeout 5 seconds |
+| `max_retries` | Retry count | `2` |
+| `default_headers` | Headers sent with each request | None |
+| `default_query` | Query parameters sent with each request | None |
+| `http_client` | Custom HTTPX client | SDK-managed client |
 
-<br />
+Methods also accept `extra_headers`, `extra_query`, `extra_body`, and `timeout` for individual requests.
 
-## Requirements
+Set `STRADDLE_LOG` to `info` or `debug` to enable HTTP logging. The SDK uses Python's standard `logging` module under the `straddle` logger.
 
-- Python 3.8 or newer
+## Reference and support
 
-Powered by Scalar.
+Use the following resources as you build your integration:
+
+- [SDK method reference](./api.md): operations, parameters, and response types.
+- [Straddle guides](https://docs.straddle.com): payment flows, sandbox testing, and API concepts.
+- [GitHub issues](https://github.com/straddle-build/straddle-python/issues): SDK bugs and feature requests.
+- [Versioning and contributions](./VERSIONING.md): submit customizations against `scalar-next` so Scalar carries them through regeneration.
+- [Security policy](./SECURITY.md) and [Apache 2.0 license](./LICENSE).
+
+Straddle generates this SDK with Scalar and maintains repository customizations through the workflow in `VERSIONING.md`.
