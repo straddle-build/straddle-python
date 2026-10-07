@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/straddle-build/straddle-python/compare/v1.0.5...v1.0.6) (2026-10-07)
+
+
+### Documentation
+
+* refresh Python SDK quickstart and examples ([#6](https://github.com/straddle-build/straddle-python/issues/6)) ([72cbf88](https://github.com/straddle-build/straddle-python/commit/72cbf885e9199e5acd942c54ce76843da2864dfa))
+
 ## [1.0.5](https://github.com/straddle-build/straddle-python/compare/v1.0.4...v1.0.5) (2026-09-27)
 
 
